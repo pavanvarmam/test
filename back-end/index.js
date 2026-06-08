@@ -3,11 +3,11 @@ import { simulatePlayer }  from './physics.js';
 
 const allowedOrigins = [
     'http://localhost:5173',
-    'https://mygame.com'
+    "http://ec2-40-192-121-1.ap-south-2.compute.amazonaws.com"
 ];
 
 // ── Constants ─────────────────────────────────────────────────────
-const PORT              = 3001;
+const PORT              = 3000;
 const MAX_PLAYERS       = 6;
 const MIN_PLAYERS       = 2;
 const WORLD_WIDTH       = 2000;

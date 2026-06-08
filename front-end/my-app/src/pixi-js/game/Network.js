@@ -1,4 +1,5 @@
-const SERVER_URL    = "ws://localhost:3001";
+// const SERVER_URL    = "ws://localhost:3001";
+const SERVER_URL    = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.hostname}:3000`
 const SEND_RATE     = 20;
 const SEND_INTERVAL = 1000 / SEND_RATE;
 
