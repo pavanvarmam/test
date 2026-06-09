@@ -221,8 +221,6 @@ function removePlayer(id) {
 
   if (gameState === "waiting" || gameState === "countdown") {
     checkGameStart(); // may cancel countdown if too few ready
-  } else if (gameState === "playing") {
-    checkRoundEnd();  // a disconnect might end the round
   }
 }
 
