@@ -60,6 +60,7 @@ export default function GameUI(){
 
       const onCountDown = (seconds) => {
         setGameScreen("countdown");
+        resetInputs();
         countDownTimer("countdown", seconds);
       }
 
@@ -87,6 +88,7 @@ export default function GameUI(){
 
       const OnLobby = ({players, gameState})=>{
         setGameScreen(gameState);
+        if(gameState && gameState !== "playing") resetInputs();
         setPlayerList(players);
       }
 
