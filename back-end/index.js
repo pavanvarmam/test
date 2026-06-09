@@ -315,6 +315,7 @@ function startGame() {
 // ── Round flow ────────────────────────────────────────────────────
 function startRound(roundIndex) {
   const cfg    = ZONE_ROUNDS[roundIndex];
+
   const margin = cfg.radius + 100;
 
   zone.x        = randomBetween(margin, WORLD_WIDTH  - margin);
@@ -381,14 +382,21 @@ function eliminatePlayers() {
 
 function checkRoundEnd() {
 
-  if (zone.round >= ZONE_ROUNDS.length-1) {
-    // All rounds done — whoever's alive wins
+  const nextRound = zone.round + 1;
+
+  if (nextRound >= ZONE_ROUNDS.length) {
+    console.log("Game finished");
     endGame();
     return;
   }
 
-  console.log(`[Round ${zone.round + 1}] — next round in ${BETWEEN_ROUND_MS / 1000}s`);
-  setTimeout(() => startRound(zone.round + 1), BETWEEN_ROUND_MS);
+  console.log(
+    `[Round ${zone.round + 1}] — next round in ${BETWEEN_ROUND_MS / 1000}s`
+  );
+
+  setTimeout(() => {
+    startRound(nextRound);
+  }, BETWEEN_ROUND_MS);
 }
 
 function endGame() {
