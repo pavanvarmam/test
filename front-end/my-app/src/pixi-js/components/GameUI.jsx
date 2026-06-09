@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { network } from "../game/Network";
-import { setForward,setBackward,setRight,setLeft,setBoost,setHandbrake } from "../game/Input";
+import { setForward,setBackward,setRight,setLeft,setBoost,setHandbrake,resetInputs } from "../game/Input";
 
 export default function GameUI(){
 
@@ -79,6 +79,7 @@ export default function GameUI(){
       const onRoundEnd = ({players, eleminated}) => {
         const isEleminated = eleminated?.some(id => id === myId);
         setGameScreen("round_end");
+        resetInputs();
         setPlayerList(players || []);
         setNotification(`Round completed! You are ${isEleminated?'UN-SAFE':'SAFE'}, ready for next round`);
         setTimeout(() => setNotification(null), 3000);
@@ -91,11 +92,13 @@ export default function GameUI(){
 
       const onGameOver = ({players}) => {
         setGameScreen("game_over")
+        resetInputs();
         setPlayerList(players);
       };
 
       const onGameReset = (data) => {
         setGameScreen("waiting");
+        resetInputs();
         setMyReady(false);
         setHud(null);
         setNotification(null);

@@ -38,6 +38,15 @@ export function cleanupKeyboard() {
   window.removeEventListener("keyup",   onKeyUp);
 }
 
+export function resetInputs() {
+    input.forward = false;
+    input.backward = false;
+    input.left = false;
+    input.right = false;
+    input.boost = false;
+    input.handbrake = false;
+}
+
 // TOUCH/UI CONTROL API
 
 export function setForward(v) {
