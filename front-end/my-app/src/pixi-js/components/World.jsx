@@ -232,7 +232,7 @@ export default function World({
       accumulatorRef.current += Math.min(deltaSeconds, 0.25);
       while (accumulatorRef.current >= FIXED_DT) {
         simulatePlayer(player, FIXED_DT, input);
-        if (network.isConnected()) {
+        if (network.connect) {
           const seq = reconciler.current.getSeq();
           network.queueInput(seq, { ...input });
           reconciler.current.recordInput(seq, { ...input });
