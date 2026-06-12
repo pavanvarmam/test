@@ -17,6 +17,8 @@ export default function GameUI(){
     const [hud, setHud]                     = useState(null);      // { round, timeLeft }
     const [notification, setNotification]   = useState(null);      // string
     const [fullScreenNote, setFullScreenNote] = useState(true);
+    const [ping, setPing] = useState(0);
+    const [connection, setConnection] = useState();
 
     const countdownIntervalRef = useRef(null);
 
@@ -105,6 +107,14 @@ export default function GameUI(){
         setPlayerList(data.players || []);
       };
 
+      const onLatencyUpdate = (latency) => {
+        setPing(latency);
+      }
+
+      const onConnectionLost = ({reason}) => {
+        setConnection(reason);
+      }
+
       network.on("init", onInit);
          
       network.on("countdown", onCountDown);
@@ -120,6 +130,10 @@ export default function GameUI(){
       network.on("game_reset", onGameReset);
 
       network.on("lobby", OnLobby);
+
+      network.on("latency", onLatencyUpdate);
+
+      network.on("connection_lost", onConnectionLost);
 
       return ()=>{
         network.off("init", onInit);
@@ -137,6 +151,10 @@ export default function GameUI(){
         network.off("game_reset", onGameReset);
 
         network.off("lobby", OnLobby);
+
+        network.off("latency", onLatencyUpdate);
+
+        network.off("connection_lost", onConnectionLost);
       }
     },[myId])
 
@@ -174,7 +192,20 @@ export default function GameUI(){
     // Countdown function
 
     return <>
-        {/* ── Countdown ── */}
+      {/* ── Countdown ── */}
+      {
+        <div style={{
+              ...styles.pingLabel,
+              ...(connection ? styles.connectionLost : {})
+            }}>
+          {
+            connection ? 
+            `Connection lost -> Reason : ${connection}` : 
+            `Ping: ${ping} ms`
+          }
+        </div>
+      }
+      {/* ── Countdown ── */}
       {gameScreen === "countdown" && countdownNum !== null && (
         <div style={styles.overlayTransparent}>
           <div style={{ ...styles.bigNumber, color: "#00ff88" }}>
@@ -311,6 +342,7 @@ export default function GameUI(){
           </div>
         </div>
       )}
+      {/* { This is for controls } */}
       {gameScreen === "playing" && isTouchDevice && (
         <div style={styles.controls}>
 
@@ -319,12 +351,20 @@ export default function GameUI(){
           <div
             style={{ ...styles.controlBtn, ...styles.leftBtn }}
             
-            onTouchStart={() => setLeft(true)}
-            onTouchEnd={() => setLeft(false)}
-            onTouchCancel={() => setLeft(false)}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setLeft(true);
+            }}
 
-            onMouseDown={() => setLeft(true)}
-            onMouseUp={() => setLeft(false)}
+            onPointerUp={(e) => {
+              e.preventDefault();
+              setLeft(false);
+            }}
+
+            onPointerCancel={(e) => {
+              e.preventDefault();
+              setLeft(false);
+            }}
           >
             ◀
           </div>
@@ -332,12 +372,20 @@ export default function GameUI(){
           <div
             style={{ ...styles.controlBtn, ...styles.rightBtn }}
             
-            onTouchStart={() => setRight(true)}
-            onTouchEnd={() => setRight(false)}
-            onTouchCancel={() => setRight(false)}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setRight(true);
+            }}
 
-            onMouseDown={() => setRight(true)}
-            onMouseUp={() => setRight(false)}
+            onPointerUp={(e) => {
+              e.preventDefault();
+              setRight(false);
+            }}
+
+            onPointerCancel={(e) => {
+              e.preventDefault();
+              setRight(false);
+            }}
           >
             ▶
           </div>
@@ -349,12 +397,20 @@ export default function GameUI(){
               ...styles.boostBtn
             }}
             
-            onTouchStart={() => setBoost(true)}
-            onTouchEnd={() => setBoost(false)}
-            onTouchCancel={() => setBoost(false)}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setBoost(true);
+            }}
 
-            onMouseDown={() => setBoost(true)}
-            onMouseUp={() => setBoost(false)}
+            onPointerUp={(e) => {
+              e.preventDefault();
+              setBoost(false);
+            }}
+
+            onPointerCancel={(e) => {
+              e.preventDefault();
+              setBoost(false);
+            }}
           >
             BOOST
           </div>
@@ -364,12 +420,20 @@ export default function GameUI(){
           <div
             style={{ ...styles.controlBtn, ...styles.forwardBtn }}
             
-            onTouchStart={() => setForward(true)}
-            onTouchEnd={() => setForward(false)}
-            onTouchCancel={() => setForward(false)}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setForward(true);
+            }}
 
-            onMouseDown={() => setForward(true)}
-            onMouseUp={() => setForward(false)}
+            onPointerUp={(e) => {
+              e.preventDefault();
+              setForward(false);
+            }}
+
+            onPointerCancel={(e) => {
+              e.preventDefault();
+              setForward(false);
+            }}
           >
             ▲
           </div>
@@ -381,12 +445,20 @@ export default function GameUI(){
               ...styles.handbrakeBtn
             }}
             
-            onTouchStart={() => setHandbrake(true)}
-            onTouchEnd={() => setHandbrake(false)}
-            onTouchCancel={() => setHandbrake(false)}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setHandbrake(true);
+            }}
 
-            onMouseDown={() => setHandbrake(true)}
-            onMouseUp={() => setHandbrake(false)}
+            onPointerUp={(e) => {
+              e.preventDefault();
+              setHandbrake(false);
+            }}
+
+            onPointerCancel={(e) => {
+              e.preventDefault();
+              setHandbrake(false);
+            }}
           >
             DRIFT
           </div>
@@ -394,18 +466,27 @@ export default function GameUI(){
           <div
             style={{ ...styles.controlBtn, ...styles.backwardBtn }}
             
-            onTouchStart={() => setBackward(true)}
-            onTouchEnd={() => setBackward(false)}
-            onTouchCancel={() => setBackward(false)}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              setBackward(true);
+            }}
 
-            onMouseDown={() => setBackward(true)}
-            onMouseUp={() => setBackward(false)}
+            onPointerUp={(e) => {
+              e.preventDefault();
+              setBackward(false);
+            }}
+
+            onPointerCancel={(e) => {
+              e.preventDefault();
+              setBackward(false);
+            }}
           >
             ▼
           </div>
 
         </div>
       )}
+      {/* {end of control inputs} */}
       {fullScreenNote && (
         <div
           style={{
@@ -605,9 +686,15 @@ const styles = {
     fontFamily: "monospace",
     fontWeight: "bold",
     fontSize: 15,
+
     userSelect: "none",
     WebkitUserSelect: "none",
+
     touchAction: "none",
+
+    WebkitTouchCallout: "none",
+    WebkitTapHighlightColor: "transparent",
+
     pointerEvents: "auto",
     backdropFilter: "blur(4px)",
   },
@@ -650,5 +737,29 @@ const styles = {
   backwardBtn: {
     bottom: 36,
     right: 58,
+  },
+
+  pingLabel: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    background: "rgba(0,0,0,0.65)",
+    color: "#00ff88",
+    fontFamily: "monospace",
+    fontSize: 10,
+    padding: "2px 4px",
+    borderRadius: 2,
+    border: "1px solid #00ff88",
+    pointerEvents: "none",
+    userSelect: "none",
+    WebkitUserSelect: "none",
+    touchAction: "none",
+    zIndex: 100,
+  },
+
+  connectionLost: {
+    color: "#ff4444",
+    border: "1px solid #ff4444",
+    background: "rgba(100,0,0,0.7)",
   },
 };

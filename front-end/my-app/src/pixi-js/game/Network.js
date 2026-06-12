@@ -1,4 +1,5 @@
-const SERVER_URL =  `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws`;
+// const SERVER_URL =  `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws`;
+const SERVER_URL =  "ws://localhost:3000";
 const SEND_RATE     = 20;
 const SEND_INTERVAL = 1000 / SEND_RATE;
 
@@ -14,6 +15,10 @@ class Network {
 
     this._pendingFrames = [];
     this._sendTimer     = null;
+    this._watchDogTimer = null;
+
+    this.lastServerMessage = Date.now();
+    this.connectionLost = false;
   }
 
   // ─────────────────────────────────────────────
@@ -64,10 +69,14 @@ class Network {
 
       console.log("[Network] connected");
 
+      this._startWatchDog();
+
       this._startSendLoop();
     };
 
     this.ws.onmessage = (event) => {
+
+      this.lastServerMessage = Date.now();
 
       const msg = JSON.parse(event.data);
 
@@ -106,6 +115,8 @@ class Network {
         case "ping":
 
           this._sendPong();
+
+          this.emit("latency", msg.latency);
 
           break;
 
@@ -169,14 +180,24 @@ class Network {
 
       this.connected = false;
 
+      this._stopWatchDog();
+
       this._stopSendLoop();
 
       console.log("[Network] disconnected");
+
+      this.emit("connection_lost", {reason:"close"});
     };
 
     this.ws.onerror = (e) => {
 
+      this._stopWatchDog();
+
+      this._stopSendLoop();
+
       console.error("[Network] error", e);
+
+      this.emit("connection_lost", {reason:"error"});
     };
   }
 
@@ -185,11 +206,28 @@ class Network {
   // ─────────────────────────────────────────────
 
   queueInput(seq, input) {
-
     this._pendingFrames.push({
       seq,
       input: { ...input }
     });
+  }
+
+  _startWatchDog(){
+    this._watchDogTimer = setInterval(() => {
+      const elapsed = Date.now() - this.lastServerMessage;
+
+      if (!this.connectionLost && elapsed > 12000) {
+        this.connectionLost = true;
+        console.log("Connection lost");
+
+        // notify UI
+        this.emit("connection_lost", {reason:"timeout"});
+
+        this._stopWatchDog();
+
+        this._stopSendLoop();
+      }
+    }, 1000);
   }
 
   _startSendLoop() {
@@ -220,6 +258,13 @@ class Network {
     this._sendTimer = null;
   }
 
+  _stopWatchDog() {
+
+    clearInterval(this._watchDogTimer);
+
+    this._watchDogTimer = null;
+  }
+
   // ─────────────────────────────────────────────
   // Utility
   // ─────────────────────────────────────────────
@@ -245,6 +290,7 @@ class Network {
   }
 
   disconnect() {
+    this._stopWatchDog();
 
     this._stopSendLoop();
 

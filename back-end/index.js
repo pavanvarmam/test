@@ -156,7 +156,9 @@ wss.on("connection", (ws, request) => {
     wins:        0,
     lastSeq:     0,
     lastInput:   { forward: false, backward: false, left: false, right: false, boost: false, handbrake: false },
+    lastPing:    Date.now(),
     lastPong:    Date.now(),
+    latency: 0,
     state:       { x: spawn.x, y: spawn.y, rotation: 0, vx: 0, vy: 0 },
   };
 
@@ -204,7 +206,9 @@ wss.on("connection", (ws, request) => {
 
       // ── Heartbeat ────────────────────────────────────────────────
       if (msg.type === "pong") {
-        player.lastPong = Date.now();
+        const now = Date.now();
+        player.latency = now - player.lastPing;
+        player.lastPong = now;
       }
     } catch (_) {}
   });
@@ -613,7 +617,8 @@ setInterval(() => {
       console.log(`[!] Player ${id} timed out`);
       p.ws.terminate();
     } else if (p.ws.readyState === 1) {
-      p.ws.send(JSON.stringify({ type: "ping" }));
+      p.lastPing = now;
+      p.ws.send(JSON.stringify({ type: "ping", latency: p.latency }));
     }
   }
 }, 5000);
