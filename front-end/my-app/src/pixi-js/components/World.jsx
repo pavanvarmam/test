@@ -177,6 +177,10 @@ export default function World({
       zoneRef.current = null;
     };
 
+    const onConnectionLost = () => {
+      reconciler.current.reset();
+    }
+
     network.on("init",onInit);
 
     network.on("game_start",onGameStart);
@@ -193,6 +197,8 @@ export default function World({
 
     network.on("full", onFull);
 
+    network.on("connection_lost", onConnectionLost);
+
     return () => {
       cleanupKeyboard();
       network.off("init",onInit);
@@ -203,6 +209,7 @@ export default function World({
       network.off("game_reset", onGameReset);
       network.off("leave", onLeave);
       network.off("full", onFull);
+      network.off("connection_lost", onConnectionLost);
       network.disconnect();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -225,9 +232,11 @@ export default function World({
       accumulatorRef.current += Math.min(deltaSeconds, 0.25);
       while (accumulatorRef.current >= FIXED_DT) {
         simulatePlayer(player, FIXED_DT, input);
-        const seq = reconciler.current.getSeq();
-        network.queueInput(seq, { ...input });
-        reconciler.current.recordInput(seq, { ...input });
+        if (network.isConnected()) {
+          const seq = reconciler.current.getSeq();
+          network.queueInput(seq, { ...input });
+          reconciler.current.recordInput(seq, { ...input });
+        }
         player.x = Math.max(0, Math.min(WORLD_WIDTH,  player.x));
         player.y = Math.max(0, Math.min(WORLD_HEIGHT, player.y));
         accumulatorRef.current -= FIXED_DT;

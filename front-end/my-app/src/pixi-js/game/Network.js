@@ -1,5 +1,5 @@
-// const SERVER_URL =  `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws`;
-const SERVER_URL =  "ws://localhost:3000";
+const SERVER_URL =  `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws`;
+// const SERVER_URL =  "ws://localhost:3000";
 const SEND_RATE     = 20;
 const SEND_INTERVAL = 1000 / SEND_RATE;
 
@@ -218,6 +218,7 @@ class Network {
 
       if (!this.connectionLost && elapsed > 12000) {
         this.connectionLost = true;
+        this.connected = false;
         console.log("Connection lost");
 
         // notify UI
